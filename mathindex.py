@@ -1,5 +1,7 @@
+#!/usr/bin/python3
 """Index math expressions from notebooks.
 """
+import json
 import logging
 import nbformat
 import os
@@ -92,20 +94,32 @@ def main(argv=None):
     #ap.add_argument('--debug', action='store_true', help=argparse.SUPPRESS)
     args = ap.parse_args(argv)
 
+    records = []
+
     if os.path.isdir(args.path):
         # Search directory
         current_filepath = None
+        base_url = 'http://nbviewer.jupyter.org/github/{}/blob/master/'\
+                    .format(args.gh_repo or '-----')
         for filepath, info in scan_directory(args.path):
             if filepath != current_filepath:
                 if current_filepath is not None:
                     print()  # Blank line between files
                 current_filepath = filepath
+
                 if args.gh_repo:
                     print('http://nbviewer.jupyter.org/github/{}/blob/master/{}'
                             .format(args.gh_repo, filepath))
                 else:
                     print(filepath)
             _printline(info)
+            records.append({
+                'url': base_url + filepath + '#' + info['url_fragment'],
+                'tex': info['latex'],
+            })
+            if records:
+                with open('output.json', 'w', encoding='utf-8') as f:
+                    json.dump(records, f, indent=2, sort_keys=True)
 
     elif os.path.exists(args.path):
         # Search file
