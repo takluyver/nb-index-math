@@ -15,15 +15,15 @@ class MathRecordingRenderer(IPythonRenderer):
         self.extracted_math = []
 
     def block_math(self, text):
-        self.extracted_math.append(text.strip())
+        self.extracted_math.append('$$%s$$' % text)
         return super().block_math(text)
 
     def latex_environment(self, name, text):
-        self.extracted_math.append(text.strip())
+        self.extracted_math.append('\\begin{%s}%s\\end{%s}' % (name, text, name))
         return super().latex_environment(name, text)
 
     def inline_math(self, text):
-        self.extracted_math.append(text)
+        self.extracted_math.append('$%s$' % text)
         return super().inline_math(text)
 
 def scan_markdown(source):
